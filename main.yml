@@ -7,7 +7,7 @@
 
 # Set Hostname
 
-- hosts: localhost
+- hosts: mailserver
 
   # Set Configuration Files
 
@@ -16,7 +16,7 @@
 
   # Elevate Priv
 
-  remote_user: root
+  remote_user: jan
   become: yes
   become_method: sudo
 
