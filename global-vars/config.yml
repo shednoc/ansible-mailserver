@@ -8,14 +8,15 @@ servermaildbpass: 4f5dcb3dFDF
 mysql_user: root # MySQL Role
 mysql_root_password: S5CBiFeq44X9kAb8 # MySQL Role
 region: Europe/London # Region set for PHP
-domain: shednoc.com # Postfix Role
+domain: easybop-staging.co.uk # Postfix Role
 mail_dns: mail
 webmail_dns: webmail
 firstname: jan # Postfix Role
 aliases: postmaster # Postfix Role
 emailpass: Ninjatit123!
 roundcube_name: "Propeller Studios Roundcube dev" # Roundcube Role
-roundcube_src: https://github.com/roundcube/roundcubemail/releases/download/1.4.11/roundcubemail-1.4.11-complete.tar.gz # Roundcube Role
+#roundcube_src: https://github.com/roundcube/roundcubemail/releases/download/1.4.11/roundcubemail-1.4.11-complete.tar.gz # Roundcube Role
+roundcube_src: https://github.com/roundcube/roundcubemail/releases/download/1.6.1/roundcubemail-1.6.1-complete.tar.gz # Roundcube Role
 roundcube_db: examplercdb # Roundcube Role
 roundcube_db_user: examplercdbusr # Roundcube Role
 roundcube_db_psss: 72LpwhA4A6kCFu # Roundcube Role

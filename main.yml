@@ -1,8 +1,8 @@
 ---
 
 #########################
-# Builder: Chris Reeves #
-# Date: 4th Feb 2019.   #
+# Builder: Jan Brinham #
+# Date: 4th May 2023.   #
 #########################
 
 # Set Hostname
@@ -52,7 +52,7 @@
       apt: name=apache2 state=present
 
     - name: Install PHP
-      apt: name=php state=present
+      apt: name=php8.1 state=present
 
     - name: Install Postfix
       apt: name=postfix state=present
@@ -60,8 +60,8 @@
     - name: Install Dovecot
       apt: name=dovecot-core state=present
 
-    - name: Install mySQL Server
-      apt: name=mysql-server state=present
+    #- name: Install mySQL Server
+    #  apt: name=mysql-server state=present
 
     - name: Install SpamAssassin
       apt: name=spamassassin state=present
@@ -87,22 +87,22 @@
           - mysql-common #MySQL
           - spamc #SpamAssassin
           - php-pear #Roundcube
-          - php-gd #Roundcube
-          - php-mysql #Roundcube
-          - php-curl #Roundcube
-          - php-zip #Roundcube
-          - php-ldap #Roundcube
-          - php-mbstring #Roundcube
-          - php-imagick #Roundcube
-          - php7.4-intl #Roundcube
-          - php-xml #Roundcube
+          - php8.1-gd #Roundcube
+          - php8.1-mysql #Roundcube
+          - php8.1-curl #Roundcube
+          - php8.1-zip #Roundcube
+          - php8.1-ldap #Roundcube
+          - php8.1-mbstring #Roundcube
+          - php8.1-imagick #Roundcube
+          - php8.1-intl #Roundcube
+          - php8.1-xml #Roundcube
           - dovecot-sieve #Sieve
           - dovecot-managesieved #Sieve
-          - python-openssl #Letsencrypt
-          - php-imap #PostfixAdmin
-          - php-mbstring #PostfixAdmin
-          - php7.4-imap #PostfixAdmin
-          - php7.4-mbstring #PostfixAdmin
+          - python3-openssl #Letsencrypt
+          - php8.1-imap #PostfixAdmin
+          - php8.1-mbstring #PostfixAdmin
+          - php8.1-imap #PostfixAdmin
+          - php8.1-mbstring #PostfixAdmin
           - unzip #System
           - wget #System
         state: present
@@ -115,83 +115,82 @@
 
     # MySQL
 
-    - name: Ensure mysql is running and starts on boot
-      service: name=mysql state=started enabled=true
+    #- name: Ensure mysql is running and starts on boot
+    #  service: name=mysql state=started enabled=true
 
-    - name: Stop MySQL
-      service: name=mysql state=stopped
+    #- name: Stop MySQL
+    #  service: name=mysql state=stopped
 
-    - name: set environment variables
-      shell: systemctl set-environment MYSQLD_OPTS="--skip-grant-tables"
+    #- name: set environment variables
+    #  shell: systemctl set-environment MYSQLD_OPTS="--skip-grant-tables"
 
-    - name: Start MySQL
-      service: name=mysql state=started
+    #- name: Start MySQL
+    #  service: name=mysql state=started
 
-    - name: Change root password
-      command:  mysql -u root --execute="ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '"{{ mysql_root_password }}"';"
+    #- name: Change root password
+    #  command:  mysql -u root --execute="ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '"{{ mysql_root_password }}"';"
 
-    - name: Create ~/.my.cnf
-      file:
-        path: ~/.my.cnf
-        state: touch
+    #- name: Create ~/.my.cnf
+    #  file:
+    #    path: ~/.my.cnf
+    #    state: touch
 
-    - name: Insert into ~/.my.cnf
-      blockinfile:
-        path: ~/.my.cnf
-        block: |
-          [client]
-          user={{ mysql_user }}
-          password={{ mysql_root_password }}
-    - name: SQL Flush Privileges
-      command:  mysql -u root --execute="FLUSH PRIVILEGES"
+    #- name: Insert into ~/.my.cnf
+    #  blockinfile:
+    #    path: ~/.my.cnf
+    #    block: |
+    #      [client]
+    #      user={{ mysql_user }}
+    #      password={{ mysql_root_password }}
+    #- name: SQL Flush Privileges
+    #  command:  mysql -u root --execute="FLUSH PRIVILEGES"
 
-    - name: Stop MySQL
-      service: name=mysql state=stopped
+    #- name: Stop MySQL
+    #  service: name=mysql state=stopped
 
-    - name: Unset environment variables
-      shell: systemctl unset-environment MYSQLD_OPTS
+    #- name: Unset environment variables
+    #  shell: systemctl unset-environment MYSQLD_OPTS
 
-    - name: Start MySQL
-      service: name=mysql state=started
+    #- name: Start MySQL
+    #  service: name=mysql state=started
 
-    - name: Ensure anonymous users are not in the database
-      mysql_user: name='' host={{ item }} state=absent
-      with_items:
-        - localhost
-        - "{{ inventory_hostname }}"
+    #- name: Ensure anonymous users are not in the database
+    #  mysql_user: name='' host={{ item }} state=absent
+    #  with_items:
+    #    - localhost
+    #    - "{{ inventory_hostname }}"
 
-    - name: Remove test database
-      mysql_db: name=test state=absent
+    #- name: Remove test database
+    #  mysql_db: name=test state=absent
 
+    #- name: Create a new database
+    #  mysql_db:
+    #     name: "{{ mail_db_dbname }}"
+    #     state: present
+    
+    #- name: Create DB user and pass
+    #  command: mysql -u root --execute="CREATE USER '"{{ servermailuser }}"'@'127.0.0.1' IDENTIFIED BY '"{{ servermaildbpass }}"';"
 
-    #    - name: Create a new database
-    #      mysql_db:
-    #        name: "{{ mail_db_dbname }}"
-    #        state: present
-    #
-    #    - name: Create DB user and pass
-    #      command: mysql -u root --execute="CREATE USER '"{{ servermailuser }}"'@'127.0.0.1' IDENTIFIED BY '"{{ servermaildbpass }}"';"
-    #
-    #    - name: Create DB user and pass and assign rights
-    #      command: mysql -u root --execute="GRANT SELECT ON {{ mail_db_dbname }}.* TO '"{{ servermailuser }}"'@'127.0.0.1';"
-    #
-    #    - name: Create virtual domains table
-    #      command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_domains` ( `id`  INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(50) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-    #
-    #    - name: Create virtual users table
-    #      command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_users` ( `id` INT NOT NULL AUTO_INCREMENT, `domain_id` INT NOT NULL, `password` VARCHAR(106) NOT NULL, `email` VARCHAR(120) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `email` (`email`), FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-    #
-    #    - name: Create virtual aliases table
-    #      command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_aliases` ( `id` INT NOT NULL AUTO_INCREMENT, `domain_id` INT NOT NULL, `source` varchar(100) NOT NULL, `destination` varchar(100) NOT NULL, PRIMARY KEY (`id`), FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-    #
-    #    - name: Add Domain to Virtual Domains Table
-    #      command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_domains` (`id` ,`name`) VALUES ('1', '"{{ domain }}"');"
-    #
-    #    - name: Add Email to Virtual Users Table
-    #      command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_users` (`id`, `domain_id`, `password` , `email`) VALUES ('1', '1', ENCRYPT('"{{ emailpass }}"', CONCAT('$6$', SUBSTRING(SHA(RAND()), -16))), '"{{ firstname }}'@'{{ domain }}"');"
-    #
-    #    - name: Add Aliases to Virtual Aliases Table
-    #      command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_aliases` (`id`, `domain_id`, `source`, `destination`) VALUES ('1', '1', '"{{ aliases }}'@'{{ domain }}"', '"{{ firstname }}'@'{{ domain }}"');"
+    #- name: Create DB user and pass and assign rights
+    #  command: mysql -u root --execute="GRANT SELECT ON {{ mail_db_dbname }}.* TO '"{{ servermailuser }}"'@'127.0.0.1';"
+
+    #- name: Create virtual domains table
+    #  command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_domains` ( `id`  INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(50) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+
+    #- name: Create virtual users table
+    #  command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_users` ( `id` INT NOT NULL AUTO_INCREMENT, `domain_id` INT NOT NULL, `password` VARCHAR(106) NOT NULL, `email` VARCHAR(120) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `email` (`email`), FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+
+    #- name: Create virtual aliases table
+    #  command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_aliases` ( `id` INT NOT NULL AUTO_INCREMENT, `domain_id` INT NOT NULL, `source` varchar(100) NOT NULL, `destination` varchar(100) NOT NULL, PRIMARY KEY (`id`), FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+
+    #- name: Add Domain to Virtual Domains Table
+    #  command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_domains` (`id` ,`name`) VALUES ('1', '"{{ domain }}"');"
+
+    #- name: Add Email to Virtual Users Table
+    #  command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_users` (`id`, `domain_id`, `password` , `email`) VALUES ('1', '1', ENCRYPT('"{{ emailpass }}"', CONCAT('$6$', SUBSTRING(SHA(RAND()), -16))), '"{{ firstname }}'@'{{ domain }}"');"
+
+    #- name: Add Aliases to Virtual Aliases Table
+    #  command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_aliases` (`id`, `domain_id`, `source`, `destination`) VALUES ('1', '1', '"{{ aliases }}'@'{{ domain }}"', '"{{ firstname }}'@'{{ domain }}"');"
 
     - name: Delete existing dist folder
       file:
@@ -232,7 +231,7 @@
 
     - name: Enable Postfix Submission
       replace:
-        path: /etc/php/7.4/apache2/php.ini
+        path: /etc/php/8.1/apache2/php.ini
         regexp: ';date.timezone ='
         replace: 'date.timezone = {{ region }}'
         backup: yes
@@ -734,7 +733,7 @@
       apt:
         pkg:
           - php-net-smtp
-          - php-net-idna2
+         # - php-net-idna2
           - php-mail-mime
         state: present
 
@@ -807,14 +806,14 @@
 
     # Roundcube Plugins
 
-    - name: Create Roundcube Plugin twofactor_gauthenticator folder
-      file:
-        path: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/plugins/twofactor_gauthenticator
-        state: directory
+    #- name: Create Roundcube Plugin twofactor_gauthenticator folder
+    #  file:
+    #    path: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/plugins/twofactor_gauthenticator
+    #    state: directory
 
-    - git:
-        repo: 'https://github.com/alexandregz/twofactor_gauthenticator.git'
-        dest: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/plugins/twofactor_gauthenticator
+    #- git:
+    #    repo: 'https://github.com/alexandregz/twofactor_gauthenticator.git'
+    #    dest: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/plugins/twofactor_gauthenticator
 
     # Roundcube Customise
 
@@ -871,7 +870,7 @@
 
 # Get Letsencrypt mail DNS && webmail DNS
 
-- hosts: localhost
+- hosts: mailserver
 
   vars_files:
     - global-vars/config.yml

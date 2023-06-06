@@ -2,7 +2,7 @@
 
 <h2> Full Description: </h2>
 
-The full description of the script can be found at https://chrisreeves.co.nz
+Propeller Mailserver Installation Script
 
 <h2> Scope: </h2>
 
