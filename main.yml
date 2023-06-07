@@ -868,7 +868,7 @@
         - /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/installer
         - /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/SQL
 
-# Get Letsencrypt mail DNS && webmail DNS
+# Get Letsencrypt mail DNS && webmail DNS test
 
 - hosts: mailserver
 
