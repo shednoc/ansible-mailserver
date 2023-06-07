@@ -9,8 +9,7 @@ Propeller Mailserver Installation Script
 This script installs and configures the following packages and services:
 
 * Apache
-* PHP 7.2
-* MySQL
+* PHP 8.1
 * Postfix
 * Dovecot
 * Letsencrypt
