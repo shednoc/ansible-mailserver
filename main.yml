@@ -1,11 +1,11 @@
 ---
 
 #########################
-# Builder: Jan Brinham #
+# Builder: Jan Brinham  #
 # Date: 4th May 2023.   #
 #########################
 
-# Set Hostname for mailserver
+# Set Hostname
 
 - hosts: mailserver
 
@@ -23,16 +23,6 @@
   # Task Statement
 
   tasks:
-
-    # Download Role Dependancies
-
-    # - name: Download thefinn93.letsencrypt
-    #   local_action: ansible-galaxy install thefinn93.letsencrypt
-
-    # - name: Download geerlingguy.firewall
-    #   local_action: ansible-galaxy install geerlingguy.firewall
-
-    # Aptitude Update && Upgrade
 
     - name: Update and Upgrade Aptitude Packages
       apt:
@@ -59,9 +49,6 @@
 
     - name: Install Dovecot
       apt: name=dovecot-core state=present
-
-    #- name: Install mySQL Server
-    #  apt: name=mysql-server state=present
 
     - name: Install SpamAssassin
       apt: name=spamassassin state=present
@@ -112,86 +99,21 @@
 
     - name: Install Python mySQL
       command: pip3 install pymysql
-
-    # MySQL
-
-    #- name: Ensure mysql is running and starts on boot
-    #  service: name=mysql state=started enabled=true
-
-    #- name: Stop MySQL
-    #  service: name=mysql state=stopped
-
-    #- name: set environment variables
-    #  shell: systemctl set-environment MYSQLD_OPTS="--skip-grant-tables"
-
-    #- name: Start MySQL
-    #  service: name=mysql state=started
-
-    #- name: Change root password
-    #  command:  mysql -u root --execute="ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '"{{ mysql_root_password }}"';"
-
-    #- name: Create ~/.my.cnf
-    #  file:
-    #    path: ~/.my.cnf
-    #    state: touch
-
-    #- name: Insert into ~/.my.cnf
-    #  blockinfile:
-    #    path: ~/.my.cnf
-    #    block: |
-    #      [client]
-    #      user={{ mysql_user }}
-    #      password={{ mysql_root_password }}
-    #- name: SQL Flush Privileges
-    #  command:  mysql -u root --execute="FLUSH PRIVILEGES"
-
-    #- name: Stop MySQL
-    #  service: name=mysql state=stopped
-
-    #- name: Unset environment variables
-    #  shell: systemctl unset-environment MYSQLD_OPTS
-
-    #- name: Start MySQL
-    #  service: name=mysql state=started
-
-    #- name: Ensure anonymous users are not in the database
-    #  mysql_user: name='' host={{ item }} state=absent
-    #  with_items:
-    #    - localhost
-    #    - "{{ inventory_hostname }}"
-
-    #- name: Remove test database
-    #  mysql_db: name=test state=absent
-
-    #- name: Create a new database
-    #  mysql_db:
-    #     name: "{{ mail_db_dbname }}"
-    #     state: present
     
-    #- name: Create DB user and pass
-    #  command: mysql -u root --execute="CREATE USER '"{{ servermailuser }}"'@'127.0.0.1' IDENTIFIED BY '"{{ servermaildbpass }}"';"
+    - name: Create ~/.my.cnf
+      file:
+        path: ~/.my.cnf
+        state: touch
 
-    #- name: Create DB user and pass and assign rights
-    #  command: mysql -u root --execute="GRANT SELECT ON {{ mail_db_dbname }}.* TO '"{{ servermailuser }}"'@'127.0.0.1';"
-
-    #- name: Create virtual domains table
-    #  command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_domains` ( `id`  INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(50) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-
-    #- name: Create virtual users table
-    #  command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_users` ( `id` INT NOT NULL AUTO_INCREMENT, `domain_id` INT NOT NULL, `password` VARCHAR(106) NOT NULL, `email` VARCHAR(120) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `email` (`email`), FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-
-    #- name: Create virtual aliases table
-    #  command: mysql -u root --execute="CREATE TABLE `"{{ mail_db_dbname }}"`.`virtual_aliases` ( `id` INT NOT NULL AUTO_INCREMENT, `domain_id` INT NOT NULL, `source` varchar(100) NOT NULL, `destination` varchar(100) NOT NULL, PRIMARY KEY (`id`), FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-
-    #- name: Add Domain to Virtual Domains Table
-    #  command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_domains` (`id` ,`name`) VALUES ('1', '"{{ domain }}"');"
-
-    #- name: Add Email to Virtual Users Table
-    #  command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_users` (`id`, `domain_id`, `password` , `email`) VALUES ('1', '1', ENCRYPT('"{{ emailpass }}"', CONCAT('$6$', SUBSTRING(SHA(RAND()), -16))), '"{{ firstname }}'@'{{ domain }}"');"
-
-    #- name: Add Aliases to Virtual Aliases Table
-    #  command: mysql -u root --execute="INSERT INTO `"{{ mail_db_dbname }}"`.`virtual_aliases` (`id`, `domain_id`, `source`, `destination`) VALUES ('1', '1', '"{{ aliases }}'@'{{ domain }}"', '"{{ firstname }}'@'{{ domain }}"');"
-
+    - name: Insert into ~/.my.cnf
+      blockinfile:
+        path: ~/.my.cnf
+        block: |
+          [client]
+          user={{ mysql_user }}
+          password={{ mysql_root_password }}
+   
+   
     - name: Delete existing dist folder
       file:
         path: /etc/postfix/main.cf
@@ -339,27 +261,33 @@
         block: |
           user = {{ servermailuser }}
           password = {{ servermaildbpass }}
-          hosts = 127.0.0.1
+          hosts = {{ mail_db_host }}
+          #hosts = 127.0.0.1
           dbname = {{ mail_db_dbname }}
-          query = SELECT 1 FROM virtual_domains WHERE name='%s'
+          query = SELECT domain AS 'virtual' FROM domains WHERE domain='%s' and active=1
+          #query = SELECT 1 FROM virtual_domains WHERE name='%s'
     - name: Insert into /etc/postfix/mysql-virtual-mailbox-maps.cf
       blockinfile:
         path: /etc/postfix/mysql-virtual-mailbox-maps.cf
         block: |
           user = {{ servermailuser }}
           password = {{ servermaildbpass }}
-          hosts = 127.0.0.1
+          hosts = {{ mail_db_host }}
+          #hosts = 127.0.0.1
           dbname = {{ mail_db_dbname }}
-          query = SELECT 1 FROM virtual_users WHERE email='%s'
+          query = SELECT CONCAT('/',SUBSTRING_INDEX(concat(username,'@',domain),'@',-1),'/',mailbox_id,'/') FROM mailboxes WHERE concat(username,'@',domain)='%s' and active = 1
+          #query = SELECT 1 FROM virtual_users WHERE email='%s'
     - name: Insert into /etc/postfix/mysql-virtual-alias-maps.cf
       blockinfile:
         path: /etc/postfix/mysql-virtual-alias-maps.cf
         block: |
           user = {{ servermailuser }}
           password = {{ servermaildbpass }}
-          hosts = 127.0.0.1
+          hosts = {{ mail_db_host }}
+          #hosts = 127.0.0.1
           dbname = {{ mail_db_dbname }}
-          query = SELECT destination FROM virtual_aliases WHERE source='%s'
+          query = SELECT destination FROM aliases WHERE source='%s' and active = 1 UNION SELECT concat(username,'@',domain) as destination  FROM mailboxes WHERE concat(username,'@',domain)='%s' and active = 1
+          #query = SELECT destination FROM virtual_aliases WHERE source='%s'
     - name:
       lineinfile:
         path: /etc/postfix/main.cf
@@ -455,7 +383,7 @@
 
     - name: Create Mail Location Folder
       file:
-        path: /var/mail/vhosts/{{ domain }}
+        path: /home/vmail/{{ domain }}
         state: directory
 
     - name: Create group "vmail"
@@ -471,72 +399,72 @@
         uid: 5000
         append: yes
 
-    - file: dest=/var/mail owner=vmail group=vmail mode=0777 recurse=yes
+    - file: dest=/home/vmail owner=vmail group=vmail mode=0777 recurse=yes
 
     # Dovecot Configuration
 
-    - name: Delete existing dovecot auth conf file
-      file:
-        path: /etc/dovecot/conf.d/10-auth.conf
-        state: absent
+    #- name: Delete existing dovecot auth conf file
+    #  file:
+    #    path: /etc/dovecot/conf.d/10-auth.conf
+    #    state: absent
 
-    - name: Apply Dovecot 10-auth conf file
-      copy:
-        src: etc/dovecot/conf.d/10-auth.conf
-        dest: /etc/dovecot/conf.d/10-auth.conf
-        owner: root
-        group: root
-        mode: 0644
-        backup: yes
+    #- name: Apply Dovecot 10-auth conf file
+    #  copy:
+    #    src: etc/dovecot/conf.d/10-auth.conf
+    #    dest: /etc/dovecot/conf.d/10-auth.conf
+    #    owner: root
+    #    group: root
+    #    mode: 0644
+    #    backup: yes
 
-    - name: Delete existing Dovecot auth SQL file
-      file:
-        path: /etc/dovecot/conf.d/auth-sql.conf.ext
-        state: absent
+    #- name: Delete existing Dovecot auth SQL file
+    #  file:
+    #    path: /etc/dovecot/conf.d/auth-sql.conf.ext
+    #    state: absent
 
-    - name: Apply Dovecot 10-auth conf file
-      copy:
-        src: etc/dovecot/conf.d/auth-sql.conf.ext
-        dest: /etc/dovecot/conf.d/auth-sql.conf.ext
-        owner: root
-        group: root
-        mode: 0644
-        backup: yes
+    #- name: Apply Dovecot 10-auth conf file
+    #  copy:
+    #    src: etc/dovecot/conf.d/auth-sql.conf.ext
+    #    dest: /etc/dovecot/conf.d/auth-sql.conf.ext
+    #    owner: root
+    #    group: root
+    #    mode: 0644
+    #    backup: yes
 
-    - name: Delete existing Dovecot SQL Conf file
-      file:
-        path: /etc/dovecot/dovecot-sql.conf.ext
-        state: absent
+    #- name: Delete existing Dovecot SQL Conf file
+    #  file:
+    #    path: /etc/dovecot/dovecot-sql.conf.ext
+    #    state: absent
 
-    - name: Apply Dovecot sql conf file
-      copy:
-        src: etc/dovecot/dovecot-sql.conf.ext
-        dest: /etc/dovecot/dovecot-sql.conf.ext
-        owner: root
-        group: root
-        mode: 0644
-        backup: yes
+    #- name: Apply Dovecot sql conf file
+    #  copy:
+    #    src: etc/dovecot/dovecot-sql.conf.ext
+    #    dest: /etc/dovecot/dovecot-sql.conf.ext
+    #    owner: root
+    #    group: root
+    #    mode: 0644
+    #    backup: yes
 
-    - name: Replace by enabling driver to mysql for Dovecot
-      replace:
-        path: /etc/dovecot/dovecot-sql.conf.ext
-        regexp: '#driver ='
-        replace: 'driver = mysql'
-        backup: yes
+    #- name: Replace by enabling driver to mysql for Dovecot
+    #  replace:
+    #    path: /etc/dovecot/dovecot-sql.conf.ext
+    #    regexp: '#driver ='
+    #    replace: 'driver = mysql'
+    #    backup: yes
 
-    - name: Replace by setting db parms for Dovecot
-      replace:
-        path: /etc/dovecot/dovecot-sql.conf.ext
-        regexp: '#connect ='
-        replace: 'connect = host=127.0.0.1 dbname={{ mail_db_dbname }} user={{ servermailuser }} password={{ servermaildbpass }}'
-        backup: yes
+    #- name: Replace by setting db parms for Dovecot
+    #  replace:
+    #    path: /etc/dovecot/dovecot-sql.conf.ext
+    #    regexp: '#connect ='
+    #    replace: 'connect = host=10.0.0.210 dbname={{ mail_db_dbname }} user={{ servermailuser }} password={{ servermaildbpass }}'
+    #    backup: yes
 
-    - name: Change Pass Scheme for Dovecot SQL
-      replace:
-        path: /etc/dovecot/dovecot-sql.conf.ext
-        regexp: '#default_pass_scheme = MD5'
-        replace: 'default_pass_scheme = SHA512-CRYPT'
-        backup: yes
+    #- name: Change Pass Scheme for Dovecot SQL
+    #  replace:
+    #    path: /etc/dovecot/dovecot-sql.conf.ext
+    #    regexp: '#default_pass_scheme = MD5'
+    #    replace: 'default_pass_scheme = SHA512-CRYPT'
+    #    backup: yes
 
     - file: dest=/var/mail owner=vmail group=dovecot recurse=yes
 
@@ -560,7 +488,7 @@
     - name: Enable Dovecot SSL
       replace:
         path: /etc/dovecot/conf.d/10-ssl.conf
-        regexp: 'ssl = yes'
+        regexp: 'ssl = no'
         replace: 'ssl = required'
         backup: yes
 
@@ -576,7 +504,7 @@
         path: /etc/dovecot/conf.d/10-ssl.conf
         regexp: 'ssl_key = </etc/dovecot/private/dovecot.key'
         replace: 'ssl_key = </etc/letsencrypt/live/{{ mail_dns }}.{{ domain }}/privkey.pem'
-        backup: yes
+    #    backup: yes
 
     # Configure SpamAssassin
 
@@ -741,33 +669,40 @@
       file:
         path: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}
         state: directory
+    
+    - name: Creating an empty file
+      file:
+        path: "/var/www/vhosts/{{ webmail_dns }}.{{ domain }}/logs/errors.log"
+        state: touch
 
     - name: Download Roundcube
       shell: wget -qO- {{ roundcube_src }} | tar xvz -C /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/ --strip 1
 
-    # - file:
-    #     path: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/
-    #     owner: nobody
-    #     group: nogroup
-    #     mode: 0555
-    #     recurse: yes
+    - file:
+         path: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/
+         owner: nobody
+         group: nogroup
+         mode: 0555
+         recurse: yes
 
-    - name: Create Roundcube DB
-      mysql_db:
-        name: "{{ roundcube_db }}"
-        state: present
-
-    - name: Create Roundcube DB User
-      mysql_user: name={{ roundcube_db_user }} password={{ roundcube_db_psss }} priv=*.*:ALL state=present
-
-    - name: Grant Roundcube DB User Permissions
-      command:  mysql -u root --execute="GRANT ALL PRIVILEGES ON {{ roundcube_db }}.* TO '{{ roundcube_db_user }}'@'localhost';"
-
-    #    - name: Create Roundcube DB Structure
-    #      shell: mysql -u root {{ roundcube_db }} < /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/SQL/mysql.initial.sql
-
+   
     # Roundcube Conf
-
+    - name: Install SSL certificate
+      copy:
+        src:  etc/apache/ssl/easybop-staging.co.uk.crt
+        dest: /etc/ssl/certs
+        owner: root
+        group: root
+        mode: 600
+    
+    - name: Install SSL certificate
+      copy:
+        src:  etc/apache/ssl/easybop-staging.co.uk.key
+        dest: /etc/ssl/private
+        owner: root
+        group: root
+        mode: 600
+    
     - name: Delete Roundcube Sample Config File
       file:
         path: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/config/config.inc.php
@@ -798,23 +733,16 @@
                   CustomLog /var/log/apache2/{{ webmail_dns }}.{{ domain }}-access.log combined
                   SSLCertificateFile /etc/letsencrypt/live/{{ webmail_dns }}.{{ domain }}/cert.pem
                   SSLCertificateKeyFile /etc/letsencrypt/live/{{ webmail_dns }}.{{ domain }}/privkey.pem
-                  SSLCertificateChainFile /etc/letsencrypt/live/{{ webmail_dns }}.{{ domain }}/fullchain.pem
+                  SSLCertificateChainFile /etc/letsencrypt/live/{{ webmail_dns }}.{{ domain }}/fullchain.pem                        
+                  #SSLCertificateFile /etc/ssl/certs/easybop-staging.co.uk.crt
+                  #SSLCertificateKeyFile /etc/ssl/private/easybop-staging.co.uk.key
+                  #SSLCertificateChainFile /etc/ssl/certs/easybop-staging.co.uk.crt/easybop-staging.co.uk-bundle.crt
           </VirtualHost>
           </IfModule>
     - name: Enable Roundcube Apache Virtual Host
       shell: a2ensite {{ webmail_dns }}.{{ domain }}
 
-    # Roundcube Plugins
-
-    #- name: Create Roundcube Plugin twofactor_gauthenticator folder
-    #  file:
-    #    path: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/plugins/twofactor_gauthenticator
-    #    state: directory
-
-    #- git:
-    #    repo: 'https://github.com/alexandregz/twofactor_gauthenticator.git'
-    #    dest: /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/plugins/twofactor_gauthenticator
-
+    
     # Roundcube Customise
 
     - name: Delete existing roundcube larry skin logo
@@ -844,7 +772,10 @@
 
     - name: Set Roundcube file perms
       shell: find /var/www/vhosts/{{ webmail_dns }}.{{ domain }} -type f -exec chmod 644 {} \;
-
+    
+    - name: Set Roundcube log file perms
+      shell: find /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/logs/errors.log -type f -exec chmod 666 {} \;
+    
     - name: Change Roundcube folder ownership
       shell: chown -R nobody:www-data /var/www/vhosts/{{ webmail_dns }}.{{ domain }}
 
@@ -867,8 +798,7 @@
       with_items:
         - /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/installer
         - /var/www/vhosts/{{ webmail_dns }}.{{ domain }}/SQL
-
-# Get Letsencrypt mail DNS && webmail DNS test
+# Get Letsencrypt mail DNS && webmail DNS
 
 - hosts: mailserver
 
@@ -905,43 +835,44 @@
 
 # Restart Services
 
-- hosts: test
+- hosts: mailserver
 
   tasks:
 
     - name: Restart Service Apache2
-      service:
+      become: true
+      systemd:
         name: apache2
         state: restarted
 
     - name: Restart Service SpamAssassin
-      service:
+      become: true
+      systemd:
         name: spamassassin
         state: restarted
 
     - name: Restart Service Postfix
-      service:
+      become: true
+      systemd:
         name: postfix
         state: restarted
 
     - name: Restart Service Dovecot
-      service:
+      become: true
+      systemd:
         name: dovecot
         state: restarted
 
-    - name: Restart Service mySQL
-      service:
-        name: mysql
-        state: restarted
-
     - name: Restart Service PostGrey
-      service:
+      become: true
+      systemd:
         name: postgrey
         state: restarted
 
     # Clean Up
 
     - name: Delete html folder
+      become: true
       file:
         path: /var/www/html
         state: absent

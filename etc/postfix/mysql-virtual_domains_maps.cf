@@ -1,0 +1,5 @@
+user = postrequest
+password = St4rdust3r
+dbname = mail_services
+query = SELECT domain AS 'virtual' FROM domains WHERE domain='%s' and active=1
+hosts = 10.20.20.32

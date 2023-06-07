@@ -1,26 +1,25 @@
-# From Ansible
-# Authentication for SQL users. Included from 10-auth.conf.
-# 
+# Authentication for SQL users. Included from auth.conf.
+#
 # <doc/wiki/AuthDatabase.SQL.txt>
 
 passdb {
   driver = sql
 
   # Path for SQL configuration file, see example-config/dovecot-sql.conf.ext
-  args = /etc/dovecot/dovecot-sql.conf.ext
+  args = /etc/dovecot/dovecot-password-sql.conf.ext
 }
 
 # "prefetch" user database means that the passdb already provided the
 # needed information and there's no need to do a separate userdb lookup.
 # <doc/wiki/UserDatabase.Prefetch.txt>
 #userdb {
-#  driver = prefetch
+  #driver = prefetch
 #}
 
 userdb {
-  driver = static
-#  args = /etc/dovecot/dovecot-sql.conf.ext
-   args = uid=vmail gid=vmail home=/var/mail/vhosts/%d/%n
+  driver = sql
+  args = /etc/dovecot/dovecot-users-sql.conf.ext
+  #args = uid=150 gid=150 home=/home/vmail/%d/%n allow_all_users=yes
 }
 
 # If you don't have any user-specific settings, you can avoid the user_query
@@ -30,3 +29,4 @@ userdb {
   #driver = static
   #args = uid=vmail gid=vmail home=/var/vmail/%u
 #}
+

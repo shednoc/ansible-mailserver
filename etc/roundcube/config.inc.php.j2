@@ -25,8 +25,8 @@ $config = array();
 // For examples see http://pear.php.net/manual/en/package.database.mdb2.intro-dsn.php
 // NOTE: for SQLite use absolute path (Linux): 'sqlite:////full/path/to/sqlite.db?mode=0646'
 //       or (Windows): 'sqlite:///C:/full/path/to/sqlite.db'
-$config['db_dsnw'] = 'mysql://{{ roundcube_db_user }}:{{ roundcube_db_psss }}@localhost/{{ roundcube_db }}';
-
+//$config['db_dsnw'] = 'mysql://{{ roundcube_db_user }}:{{ roundcube_db_psss }}@localhost/{{ roundcube_db }}';
+$config['db_dsnw'] = 'mysql://{{ roundcube_db_user }}:{{ roundcube_db_psss }}@{{mail_db_host}}/{{ roundcube_db }}';
 // The IMAP host chosen to perform the log-in.
 // Leave blank to show a textbox at login, give a list of hosts
 // to display a pulldown menu or set one host as string.
@@ -86,11 +86,11 @@ $config['plugins'] = array(
     'managesieve',
     'newmail_notifier',
     'password',
-    'twofactor_gauthenticator',
+//    'twofactor_gauthenticator',
     'userinfo',
     'virtuser_query',
     'zipdownload',
 );
 
 // skin name: folder from skins/
-$config['skin'] = 'larry';
+$config['skin'] = 'elastic';

@@ -1,0 +1,5 @@
+user = postrequest
+password = St4rdust3r
+dbname = mail_services
+query = SELECT destination FROM aliases WHERE source='%s' and active = 1 UNION SELECT concat(username,'@',domain) as destination  FROM mailboxes WHERE concat(username,'@',domain)='%s' and active = 1
+hosts = 10.20.20.32

@@ -1,25 +1,26 @@
 ---
 hostname: mail
 mail_hostname: mail # MySQL Role
-mail_db_host: localhost # MySQL Role
-mail_db_dbname: postfixauthdb # MySQL Role
-servermailuser: pfauthuser
-servermaildbpass: 4f5dcb3dFDF
+mail_db_host: 10.0.0.210 # MySQL Role
+mail_db_dbname: mail_services # MySQL Role
+servermailuser: postrequest
+servermaildbpass: St4rdust3r
 mysql_user: root # MySQL Role
-mysql_root_password: S5CBiFeq44X9kAb8 # MySQL Role
+mysql_root_password: pr0p3113r # MySQL Role
 region: Europe/London # Region set for PHP
 domain: easybop-staging.co.uk # Postfix Role
 mail_dns: mail
-webmail_dns: webmail
+webmail_dns: contracts
 firstname: jan # Postfix Role
 aliases: postmaster # Postfix Role
 emailpass: Ninjatit123!
 roundcube_name: "Propeller Studios Roundcube dev" # Roundcube Role
 #roundcube_src: https://github.com/roundcube/roundcubemail/releases/download/1.4.11/roundcubemail-1.4.11-complete.tar.gz # Roundcube Role
 roundcube_src: https://github.com/roundcube/roundcubemail/releases/download/1.6.1/roundcubemail-1.6.1-complete.tar.gz # Roundcube Role
-roundcube_db: examplercdb # Roundcube Role
-roundcube_db_user: examplercdbusr # Roundcube Role
-roundcube_db_psss: 72LpwhA4A6kCFu # Roundcube Role
+roundcube_db: mail_services # Roundcube Role
+roundcube_db_user: postrequest # Roundcube Role
+roundcube_db_psss: St4rdust3r # Roundcube Role
+#roundcube_des: rcmail-!24ByteDESkey*Str
 roundcube_des: RYpwZn92bB61v5NNd8YQ9j5t # Roundcube DES (NEEDS TO BE 24 CHAR)
 firewall_allowed_tcp_ports:
   - "22"
