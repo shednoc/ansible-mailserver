@@ -5,7 +5,7 @@
 # Date: 4th May 2023.   #
 #########################
 
-# Set Hostname
+# Set Hostname for mailserver
 
 - hosts: mailserver
 
