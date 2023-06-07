@@ -364,6 +364,24 @@
         group: root
         mode: 0644
         backup: yes
+    
+    -name: Add user sql connection file dovecot-users-sql.conf.ext
+    copy:
+      src: etc/dovecot/dovecot-users-sql.conf.ext
+      dest: /etc/dovecot/dovecot-users-sql.conf.ext
+      owner: root
+      group: root
+      mode: 0644
+      backup: yes
+
+    -name: Add password sql connection file dovecot-password-sql.conf.ext
+    copy:
+      src: etc/dovecot/dovecot-password-sql.conf.ext
+      dest: /etc/dovecot/dovecot-password-sql.conf.ext
+      owner: root
+      group: root
+      mode: 0644
+      backup: yes
 
     - name: Delete existing dovecot conf file
       file:
